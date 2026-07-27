@@ -4,6 +4,7 @@ import pandas as pd
 
 from utils.data_profiler import profile_data
 from utils.ai_analyst import analyze_question
+from utils.ai_analyst import run_analysis
 
 st.title("AI Data Analyst 📊")
 
@@ -86,7 +87,7 @@ if uploaded_file is not None:
 
     if question:
         with st.spinner("Analyzing your question..."):
-            result = analyze_question(df, question)
+            result = run_analysis(df, question)
 
         st.write("### AI Response")
         st.write(result)
