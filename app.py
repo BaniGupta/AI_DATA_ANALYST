@@ -1,6 +1,7 @@
 
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 
 from utils.data_profiler import profile_data
 from utils.ai_analyst import analyze_question
@@ -63,21 +64,21 @@ if uploaded_file is not None:
     else:
         st.info("No numerical columns found.")
 
-    st.write("### 📊 Automatic Visualizations")
+    ### st.write("### 📊 Automatic Visualizations")
 
-    numeric_columns = df.select_dtypes(include="number").columns.tolist()
+   ### numeric_columns = df.select_dtypes(include="number").columns.tolist()
 
-    if numeric_columns:
-        selected_column = st.selectbox(
-            "Choose a numerical column",
-            numeric_columns
-        )
-        st.write(f"#### Distribution of {selected_column}")
-        st.bar_chart(
-        df[selected_column].value_counts().sort_index()
-    )
-    else:
-        st.info("No numerical columns available for visualization.")
+    ###if numeric_columns:
+       ### selected_column = st.selectbox(
+           ### "Choose a numerical column",
+           ### numeric_columns
+        ###)
+        ###st.write(f"#### Distribution of {selected_column}")
+        ###st.bar_chart(
+        ###df[selected_column].value_counts().sort_index()
+    ###)
+    ###else:
+        ###st.info("No numerical columns available for visualization.")
 
     st.write("### Ask the AI Analyst")
 
@@ -90,4 +91,9 @@ if uploaded_file is not None:
             result = run_analysis(df, question)
 
         st.write("### AI Response")
-        st.write(result)
+
+        if isinstance(result, go.Figure):
+            st.plotly_chart(result, use_container_width=True)
+
+        else:
+            st.write(result)

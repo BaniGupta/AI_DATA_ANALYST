@@ -1,5 +1,5 @@
 import pandas as pd
-
+import plotly.express as px
 
 def get_column_summary(df, column):
     if column not in df.columns:
@@ -48,3 +48,143 @@ def calculate_basic_stat(df, column, operation):
 
     else:
         return "Operation not supported."
+
+def group_and_aggregate(
+    df,
+    group_column,
+    value_column,
+    operation="mean",
+    sort_order="desc",
+    limit=10
+):
+    if group_column not in df.columns:
+        return {"error": f"Column '{group_column}' not found."}
+
+    if value_column not in df.columns:
+        return {"error": f"Column '{value_column}' not found."}
+
+    grouped = df.groupby(group_column)[value_column]
+
+    if operation == "mean":
+        result = grouped.mean()
+
+    elif operation == "sum":
+        result = grouped.sum()
+
+    elif operation == "count":
+        result = grouped.count()
+
+    elif operation == "max":
+        result = grouped.max()
+
+    elif operation == "min":
+        result = grouped.min()
+
+    elif operation == "nunique":
+        result = grouped.nunique()
+
+    else:
+        return {"error": "Unsupported aggregation operation."}
+
+    
+
+    result = result.sort_values(
+    ascending=(sort_order == "asc")
+)
+
+    # Take only required rows
+    result = result.head(limit)
+
+# Convert Series to DataFrame
+    result = result.reset_index()
+
+# Rename nunique column
+    if operation == "nunique":
+        result = result.rename(
+            columns={
+                value_column: f"unique_{value_column}_count"
+        }
+    )
+
+    return result
+
+def generate_plot(
+    df,
+    chart_type,
+    x_column,
+    y_column=None,
+    aggregation=None
+):
+
+    if df is None or len(df.columns) < 2:
+        return {"error": "No data available for plotting."}
+
+    if chart_type == "histogram":
+
+        if x_column not in df.columns:
+            return {"error": f"Column '{x_column}' not found."}
+
+        fig = px.histogram(
+            df,
+            x=x_column,
+            title=f"Distribution of {x_column}"
+        )
+
+        return fig
+
+    elif chart_type == "scatter":
+
+        if x_column not in df.columns or y_column not in df.columns:
+            return {"error": "Invalid columns."}
+
+        fig = px.scatter(
+            df,
+            x=x_column,
+            y=y_column,
+            title=f"{y_column} vs {x_column}"
+        )
+
+        return fig
+
+    else:
+        return {"error": "Chart type not supported."}
+
+def generate_group_plot(df, display_type):
+
+    x_column = df.columns[0]
+    y_column = df.columns[1]
+
+    if display_type == "bar":
+
+        fig = px.bar(
+            df,
+            x=x_column,
+            y=y_column,
+            title=f"{y_column} by {x_column}"
+        )
+
+        return fig
+
+    elif display_type == "pie":
+
+        fig = px.pie(
+            df,
+            names=x_column,
+            values=y_column,
+            title=f"{y_column} by {x_column}"
+        )
+
+        return fig
+
+    elif display_type == "line":
+
+        fig = px.line(
+            df,
+            x=x_column,
+            y=y_column,
+            title=f"{y_column} by {x_column}"
+        )
+
+        return fig
+
+    return df
