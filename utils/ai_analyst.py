@@ -260,7 +260,7 @@ def run_analysis(df, question):
         value_column = tool_choice["value_column"]
         operation = tool_choice["operation"]
         sort_order = tool_choice.get("sort_order", "desc")
-        limit = tool_choice.get("limit", 10),
+        limit = int(tool_choice.get("limit", 10))
         display_type = tool_choice.get("display_type", "table")
     # Fallback rule
         if (
@@ -278,6 +278,10 @@ def run_analysis(df, question):
     sort_order,
     limit
     )
+
+        print(result)
+        if isinstance(result, dict):
+            return result
 
         if display_type != "table":
             return generate_group_plot(

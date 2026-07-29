@@ -91,7 +91,11 @@ def group_and_aggregate(
     result = result.sort_values(
     ascending=(sort_order == "asc")
 )
-
+    print("=" * 50)
+    print("limit:", repr(limit))
+    print("limit type:", type(limit))
+    print("result type:", type(result))
+    print("=" * 50)
     # Take only required rows
     result = result.head(limit)
 
