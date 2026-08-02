@@ -205,3 +205,41 @@ def generate_group_plot(df, display_type):
     
 
     return df
+
+def generate_insights(df):
+
+    if df is None or len(df.columns) < 2:
+        return ""
+
+    x_column = df.columns[0]
+    y_column = df.columns[1]
+
+    highest_row = df.loc[df[y_column].idxmax()]
+    lowest_row = df.loc[df[y_column].idxmin()]
+
+    average_value = round(df[y_column].mean(), 2)
+
+    top_three = df.nlargest(3, y_column)
+
+    top_values = []
+
+    for _, row in top_three.iterrows():
+        top_values.append(
+            f"{row[x_column]} ({round(row[y_column], 2)})"
+        )
+
+    insight = f"""
+Highest value:
+{highest_row[x_column]} ({round(highest_row[y_column], 2)})
+
+Lowest value:
+{lowest_row[x_column]} ({round(lowest_row[y_column], 2)})
+
+Average value:
+{average_value}
+
+Top 3 values:
+{", ".join(top_values)}
+"""
+
+    return insight

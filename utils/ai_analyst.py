@@ -5,6 +5,8 @@ from google import genai
 from dotenv import load_dotenv
 import os
 import json
+
+from matplotlib.pyplot import figure
 from utils.analysis_tools import (
     get_column_summary,
     get_value_counts,
@@ -12,7 +14,8 @@ from utils.analysis_tools import (
     calculate_basic_stat,
     group_and_aggregate,
     generate_plot,
-    generate_group_plot
+    generate_group_plot,
+    generate_insights
 
 )
 
@@ -21,6 +24,25 @@ load_dotenv()
 client = genai.Client(
     api_key=os.getenv("GEMINI_API_KEY")
 )
+
+COLUMN_ALIASES = {
+    "state": "customer_state",
+    "customer state": "customer_state",
+    "seller state": "seller_state",
+    "payment type": "payment_type",
+    "payment": "payment_type",
+    "category": "product_category_name",
+    "seller": "seller_id"
+}
+
+def get_actual_column(column_name):
+
+    column_name = column_name.lower()
+
+    if column_name in COLUMN_ALIASES:
+        return COLUMN_ALIASES[column_name]
+
+    return column_name
 
 def choose_tool(df, question):
 
@@ -216,7 +238,9 @@ def run_analysis(df, question):
 
     if tool == "column_summary":
 
-        column = tool_choice["column"]
+        column = get_actual_column(
+            tool_choice["column"]
+        )
 
         result = get_column_summary(
             df,
@@ -225,7 +249,9 @@ def run_analysis(df, question):
 
     elif tool == "value_counts":
 
-        column = tool_choice["column"]
+        column = get_actual_column(
+            tool_choice["column"]
+        )
 
         result = get_value_counts(
             df,
@@ -234,8 +260,13 @@ def run_analysis(df, question):
 
     elif tool == "correlation":
 
-        column1 = tool_choice["column1"]
-        column2 = tool_choice["column2"]
+        column1 = get_actual_column(
+            tool_choice["column1"]
+        )
+
+        column2 = get_actual_column(
+            tool_choice["column2"]
+        )
 
         result = get_correlation(
             df,
@@ -245,7 +276,9 @@ def run_analysis(df, question):
 
     elif tool == "basic_stat":
 
-        column = tool_choice["column"]
+        column = get_actual_column(
+            tool_choice["column"]
+        )
         operation = tool_choice["operation"]
 
         result = calculate_basic_stat(
@@ -256,8 +289,13 @@ def run_analysis(df, question):
 
     elif tool == "group_and_aggregate":
 
-        group_column = tool_choice["group_column"]
-        value_column = tool_choice["value_column"]
+        group_column = get_actual_column(
+            tool_choice["group_column"]
+        )
+
+        value_column = get_actual_column(
+            tool_choice["value_column"]
+        )
         operation = tool_choice["operation"]
         sort_order = tool_choice.get("sort_order", "desc")
         limit = int(tool_choice.get("limit", 10))
@@ -284,19 +322,31 @@ def run_analysis(df, question):
             return result
 
         if display_type != "table":
-            return generate_group_plot(
+
+            figure = generate_group_plot(
                 result,
                 display_type
-        )
+            )
+
+            insights = generate_insights(result)
+
+            return {
+            "figure": figure,
+            "insights": insights
+                }
 
         return result
 
     elif tool == "plot_chart":
 
         chart_type = tool_choice["chart_type"]
-        x_column = tool_choice["x_column"]
+        x_column = get_actual_column(
+            tool_choice["x_column"]
+        )
 
-        y_column = tool_choice.get("y_column")
+        y_column = get_actual_column(
+            tool_choice.get("y_column")
+        )
         aggregation = tool_choice.get("aggregation")
 
         return generate_plot(

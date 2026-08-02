@@ -92,8 +92,22 @@ if uploaded_file is not None:
 
         st.write("### AI Response")
 
-        if isinstance(result, go.Figure):
-            st.plotly_chart(result, use_container_width=True)
+        if isinstance(result, dict) and "figure" in result:
+
+            st.plotly_chart(
+                result["figure"],
+                use_container_width=True
+            )
+
+            st.write("### Insights")
+            st.write(result["insights"])
+
+        elif isinstance(result, go.Figure):
+
+            st.plotly_chart(
+            result,
+            use_container_width=True
+        )
 
         else:
             st.write(result)
