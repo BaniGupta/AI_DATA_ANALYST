@@ -21,10 +21,14 @@ def get_value_counts(df, column, top_n=10):
 
 
 def get_correlation(df, column1, column2):
+    """
+    Calculate the correlation coefficient between two columns.
+    """
     if column1 not in df.columns or column2 not in df.columns:
         return {"error": "One or both columns do not exist."}
 
     return df[[column1, column2]].corr().iloc[0, 1]
+
 
 def calculate_basic_stat(df, column, operation):
 
@@ -48,6 +52,7 @@ def calculate_basic_stat(df, column, operation):
 
     else:
         return "Operation not supported."
+
 
 def group_and_aggregate(
     df,
@@ -91,18 +96,14 @@ def group_and_aggregate(
     result = result.sort_values(
     ascending=(sort_order == "asc")
 )
-    print("=" * 50)
-    print("limit:", repr(limit))
-    print("limit type:", type(limit))
-    print("result type:", type(result))
-    print("=" * 50)
+    
     # Take only required rows
     result = result.head(limit)
 
-# Convert Series to DataFrame
+    # Convert Series to DataFrame
     result = result.reset_index()
 
-# Rename nunique column
+    # Rename nunique column
     if operation == "nunique":
         result = result.rename(
             columns={
@@ -112,6 +113,7 @@ def group_and_aggregate(
 
     return result
 
+
 def generate_plot(
     df,
     chart_type,
@@ -119,8 +121,10 @@ def generate_plot(
     y_column=None,
     aggregation=None
 ):
+    if isinstance(df, dict):
+        return df
 
-    if df is None or len(df.columns) < 2:
+    if df is None :
         return {"error": "No data available for plotting."}
 
     if chart_type == "histogram":
@@ -153,7 +157,14 @@ def generate_plot(
     else:
         return {"error": "Chart type not supported."}
 
+
 def generate_group_plot(df, display_type):
+
+    if isinstance(df, dict):
+        return df
+
+    if df is None or len(df.columns) < 2:
+        return {"error": "Not enough columns to generate a plot."}
 
     x_column = df.columns[0]
     y_column = df.columns[1]
@@ -189,6 +200,8 @@ def generate_group_plot(df, display_type):
             title=f"{y_column} by {x_column}"
         )
 
-        return fig
+    elif display_type == "table":
+        return df
+    
 
     return df
